@@ -1,0 +1,470 @@
+Script started on Tue 01 May 2018 11:28:08 PM EDT
+[?1034hbash-4.1$ uname -a
+Linux Zeus-1 2.6.32-696.18.7.el6.centos.plus.x86_64 #1 SMP Tue Jan 9 14:11:50 UTC 2018 x86_64 x86_64 x86_64 GNU/Linux
+bash-4.1$ cat main.c
+cat: main.c: No such file or directory
+bash-4.1$ cd src
+bash-4.1$ cat main.c
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include"itemList_dalemu2_207.h"
+
+/* main funcion 
+ * ask the user wishes to create a new delivery order. 
+ * read the location and restaurant 
+ * call  insertOrderList,printOrderItems and freeOrderItems functions
+ */ 
+
+int main ()
+{
+
+  char buffer[SIZE]={'\0'};
+  char location[SIZE] ={'\0'};
+  char restaurant[SIZE]={'\0'};
+  char option;
+
+  ordernode *hhead = NULL;   // declear and initialize hhead variable
+
+
+  printf ("\t\t\tCampus Food Delivery\n\n");	
+
+  while (1)
+    {
+      printf ("New delivery order? (y/n) : ");	/* ask the user if they wishes to creat new delivery order*/
+      fgets (buffer, SIZE, stdin);
+      sscanf (buffer, "%c", &option);		
+
+      switch (option)
+	{
+
+	case 'y':
+	  {
+
+	    printf ("\nDelivery Address for new delivery order : "); /* Read location*/
+	    fgets (location, SIZE, stdin);
+	    location[strlen (location) - 1] = '\0';
+
+	    printf ("Restaurant from which to pick up food : ");  /* read restaurant */
+	    fgets (restaurant, SIZE, stdin);
+	    restaurant[strlen (restaurant) - 1] = '\0';
+
+	    insertOrderList(&hhead,location,restaurant);     /*call insertOrderList funcion // pass the location,restaurant and head to this funcion*/
+	    printf ("\n");
+	  }
+	  break;
+
+	case 'n':
+	  {
+
+	    printOrderItems (hhead);	/*call printOrderItems function to print the delivery orders*/
+	    freeOrderItems(&hhead);	/*call freeOrderItems to free the allocated memories*/
+	    exit (0);
+	  }
+	  break;
+
+	default:
+	  printf ("Invalid Input. Try again\n");   // if the user enters other than 'n' and 'y' characters*/
+	}
+
+    }
+}
+bash-4.1$ cat itemList_dalemu2_207
+cat: itemList_dalemu2_207: No such file or directory
+bash-4.1$ cat itemList_dalemu2_207.c
+#include<string.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include"itemList_dalemu2_207.h"
+/* createItem function, is an instance of itemList struct
+ * allocate memory,initializes its fields(head and count) and returns 
+ * a pointer to the newly allocated struct
+ */
+itemList * createItem ()
+{
+
+  itemList *newNode = dmalloc (sizeof (itemList)); /*allocate memory with itemList size*/
+ 
+  newNode->head = NULL;
+  newNode->count = 0;
+
+
+  return newNode;	
+
+}
+/* insert function inserts food items in alphabetical order,
+ * ignore duplicate strings finally returns 0 if the insertion
+ * is successful otherwise return 1
+ */
+
+int insert (char *str, itemList * s)
+{
+
+  ordernode *newOrderNode = dmalloc (sizeof (ordernode));  /* allocate memory for newOrderNode variable */
+ 
+  newOrderNode->data = s; 
+
+  node *newNode = dmalloc (sizeof (node));
+  
+  int flag = 0;		
+  size_t stringL = strlen (str);	
+
+  newNode->data = dmalloc (sizeof(stringL)); /*allocate memory for node struct field( node -> data) with size of new string*/ 
+  memcpy (newNode->data, str, stringL);   /*copy the string to node*/
+  newNode->next = NULL;
+
+  if (str[0] != '\0') 	/* check the string is different from blank */
+    {
+
+      if (newOrderNode->data->head == NULL)	/*insert the first node*/
+	{
+
+	  newOrderNode->data->head = newNode;
+	  flag = 0;        
+	}
+	
+/*compare the new node data and head data( if strcmpi returns 0 ignore insertion*/
+      else if (strcmpi (newNode->data, newOrderNode->data->head->data) == 0)  
+
+	{
+
+	   flag = 1;
+	}
+
+/*compare the new node data and head data( if strcmpi returns < 0 insert new node*/
+      else if (strcmpi (newNode->data, newOrderNode->data->head->data) < 0)
+	{
+
+	  newNode->next = newOrderNode->data->head;
+	  newOrderNode->data->head = newNode;
+	  flag = 0;
+	}
+
+      else
+	{
+
+	  node *tempNode;
+	  tempNode = newOrderNode->data->head;
+	/*compare each node data with the new node data until the end of the list*/
+	  while ((tempNode->next != NULL)
+		 && (strcmpi (newNode->data, tempNode->next->data)>= 0))
+	    {
+		/* if the newnode data alrady inserted, then ignore the insertion*/
+	      if (strcmpi (newNode->data, tempNode->next->data) == 0)
+		{
+
+		  flag = 1;
+		  tempNode = tempNode->next;
+		}
+
+	      else
+		{
+
+		  tempNode = tempNode->next;
+		}
+	    }
+	if(flag==0)
+	 {
+	  newNode->next = tempNode->next;
+	  tempNode->next = newNode;
+	 }
+	}
+    }
+  else
+    {
+
+      flag = 1;
+    }
+  return flag;
+}
+/* Displays the elements of the itemList with each string on a new line.*/
+void printItems (itemList * s)
+{
+
+  node *tempNode = s->head;
+
+  while (tempNode != NULL)
+    {
+
+      printf ("   => %s\n", tempNode->data);
+      tempNode = tempNode->next;
+    }
+
+}
+/* deallocate the allocated memory*/
+void freeItem(itemList *s)
+{
+	node *tempNode;
+	tempNode=s -> head;
+	node *nextNode;
+	while(tempNode!=NULL)
+	{
+	   nextNode=tempNode -> next;
+	   
+           
+	   free(tempNode -> data);
+	   free(tempNode);
+	   tempNode=nextNode;
+	}
+	s =NULL;;
+}
+
+bash-4.1$ cat project3_dalemu2_207.c
+#include<stdlib.h>
+#include<stdio.h>
+#include<string.h>
+#include"itemList_dalemu2_207.h"
+/* createOrderNode function creats an instance of ordernode
+ * allocate memory,initializes ordernode struct field and 
+ * return a pointer to the newly allocated struct
+ */
+ordernode *createOrderNode ()
+{
+  ordernode *newOrderNode = dmalloc (SIZE *sizeof (ordernode));
+  
+  newOrderNode->data = NULL;
+  newOrderNode->deliverTo = "";
+  newOrderNode->restaurant = "";
+  newOrderNode->next = NULL;
+  return newOrderNode;
+  
+}
+/* insertOrderList funcion inserts the user delivery order lists
+ * accept head,location and restaurant values from the main function
+ * read the food items from the user and pass the value to insert function
+ */ 
+void insertOrderList (ordernode ** hhead, char *location, char *restaurant)
+{
+  char foodItem[SIZE];
+  int signal;
+  size_t str1 = strlen (location);
+  size_t str2 = strlen (restaurant);
+
+  itemList *s;
+  s = createItem (); 	/* assign the initialized itemList struct fields to pointer variable*/
+  ordernode *newOrderNode;
+  newOrderNode = createOrderNode ();  
+
+
+  newOrderNode->deliverTo = dmalloc (sizeof(str1));  /* allocate memory with str1  string size */
+  memcpy (newOrderNode->deliverTo, location, str1);
+
+  newOrderNode->restaurant = dmalloc (sizeof(str2)); /* allocate memory with str2  string size*/
+  memcpy (newOrderNode->restaurant, restaurant, str2);
+
+/* read food items until the user response is blank */
+  do
+    {
+
+      printf ("food Item :");
+      fgets (foodItem, SIZE, stdin);
+      foodItem[strlen (foodItem) - 1] = '\0';
+
+      signal = insert (foodItem, s);      /* pass the instance of itemList struct and foodItem list*/
+
+      if (signal == 0)  /* increment count if the insertion is successful*/
+	{
+	  s->count++;
+	}
+	
+    }
+  while (foodItem[0] != '\0');
+
+  newOrderNode->data = dmalloc (sizeof (itemList));
+  newOrderNode->data = s;
+
+  newOrderNode -> next =NULL;
+ 
+   newOrderNode->next = *hhead;		/* add the new node to the head of the delivery list*/
+  *hhead = newOrderNode;
+}
+
+/* print the delivery list */
+
+void printOrderItems (ordernode * hhead)
+{
+
+  ordernode *tempNode = hhead;
+  printf ("\nList of Deliveries: \n");
+
+  while (tempNode != NULL)
+    {
+      printf ("\n");
+
+      printf ("Delivery order from %s has %d food Items \n ",tempNode->restaurant, tempNode->data->count);
+
+      printItems (tempNode->data);
+      printf ("Deliver to : %s\n", tempNode->deliverTo);
+
+      tempNode = tempNode->next;
+    }
+	//freeOrderItems(&hhead);
+  printf ("\n");
+}
+
+/* free all memory allocated on insertOrderNode function*/
+void freeOrderItems(ordernode **head)
+{
+	ordernode *tempNode;
+	tempNode=*head;
+	ordernode *nextNode;
+        
+	while(tempNode!=NULL)
+	{
+	   nextNode=tempNode -> next;
+           free(tempNode -> deliverTo);
+	   free(tempNode -> restaurant);
+	   
+	   freeItem(tempNode->data);  
+	   free(tempNode -> data);
+	   free(tempNode);
+	  tempNode = nextNode; 
+	}
+
+}
+
+
+bash-4.1$ cat healperfunction.c
+cat: healperfunction.c: No such file or directory
+bash-4.1$ cat helperfunction.c
+#include<stdlib.h>
+#include<stdio.h>
+#include<ctype.h>
+/* compares strings for alphabetical ordering */
+int strcmpi (char *s, char *t)
+{
+  while (*s && tolower (*s) == tolower (*t))
+    {
+      s++;
+      t++;
+    }
+  return tolower (*s) - tolower (*t);
+}
+/* allocates memory with a check for successful allocation */
+void *dmalloc (size_t size)
+{
+  void *p = malloc (size);
+  if (!p)
+    {
+      printf ("memory allocation failed\n");
+      exit (1);
+    }
+  return p;
+}
+bash-4.1$ cd ..
+bash-4.1$ cd inc
+bash-4.1$ cat itemList_dalemu3[K2_207.h
+#ifndef itemList_dalemu2_207
+
+#define itemList_dalemu2_207
+
+typedef struct _node
+{
+   char *data;  // Food Item Name
+   struct _node *next;
+} node;
+
+typedef struct _itemList
+{
+   node *head;  // Pointer to first food item for the order (alphabetical)
+   int count;   // Number of food items in the order
+} itemList;
+typedef struct _ordernode
+{
+   itemList *data;
+   char *deliverTo;
+   char *restaurant;
+   struct _ordernode *next;
+} ordernode;
+
+#define SIZE 100
+/* prototypes for functons located at 
+ * itemList_dalemu2_207.c
+ * project3_dalemu2_207.c and
+ * helperfunction.c
+ */
+
+itemList *createItem();
+int insert(char *str, itemList *s);
+void printItems(itemList *s);
+int strcmpi(char *s, char *t);
+void *dmalloc(size_t size);
+void freeItem(itemList *s);
+void freeOrderItems(ordernode **s);
+void printOrderItems(ordernode *hhead);
+void insertOrderList(ordernode **head,char *location,char *restaurant);
+ordernode *createOrderNode();
+#endif 
+bash-4.1$ cd ..
+bash-4.1$ make
+gcc -O0 -I./inc -g -c src/project3_dalemu2_207.c -o obj/project3_dalemu2_207.o
+gcc -O0 -I./inc -g -o bin/project3_dalemu2_207 ./obj/main.o ./obj/project3_dalemu2_207.o ./obj/itemList_dalemu2_207.o ./obj/helperfunction.o
+bash-4.1$ ./obj/dalemu[K[K[K[K[K[Kproject3[K[K[K[K[K[K[K[K[K[K[K[Kinc/p[Kproject3_dalemu2_207
+bash: ./inc/project3_dalemu2_207: No such file or directory
+bash-4.1$ ./bin.[K/project3_dalemu2_207 
+			Campus Food Delivery
+
+New delivery order? (y/n) : y
+
+Delivery Address for new delivery order : Engineering Building 5335
+Restaurant from which to pick up food : Panda Express
+food Item :Fi ried Rice
+food Item :Orand ge Chicken
+food Item :Hunc an BEEF    b Beff=   ef
+food Item :potato salad
+food Item :
+
+New delivery order? (y/n) : y
+
+Delivery Address for new delivery order : Lecture Hall2
+Restaurant from which to pick up food : Red Hod t and Blue
+food Item :pulled pork sandwich
+food Item :potato salad 
+food Item :frid ed rice
+food Item :oragnc g    ange chicken
+food Item :hunan beff
+food Item :
+
+New delivery order? (y/n) : y
+
+Delivery Address for new delivery order : Merten 1200
+Restaurant from which to pick up food : dunking  donuts
+food Item :bacon
+food Item :egg
+food Item :cheese      egg and cheese
+food Item :glazed donut
+food Item :large unsweetened iced tee
+food Item :n
+food Item :
+
+New delivery order? (y/n) : n
+
+List of Deliveries: 
+
+Delivery order from dunkin donuts has 6 food Items 
+    => bacon
+   => egg
+   => egg and cheese
+   => glazed donut
+   => large unsweetened iced t1
+   => n
+Deliver to : Merten 1200
+
+Delivery order from Red Hot and Blue has 5 food Items 
+    => fried rice
+   => hunan beff
+   => orange chicken
+   => potato salad 
+   => pulled pork sandwich
+Deliver to : Lecture Hall2
+
+Delivery order from Panda Express has 4 food Items 
+    => Fried Rice
+   => Hunan Beef
+   => Orange Chicken
+   => potato salad
+Deliver to : Engineering Building 533!
+
+bash-4.1$ exit
+
+Script done on Tue 01 May 2018 11:37:44 PM EDT
